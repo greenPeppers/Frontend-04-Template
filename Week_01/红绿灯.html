@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    .wrap {
+        width: 190px;
+        height: 60px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        border: 1px solid black;
+        border-radius: 50px;
+    }
+
+    .light {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: darkgray;
+    }
+
+    .red {
+        background: red;
+    }
+
+    .green {
+        background: green;
+    }
+
+    .yellow {
+        background: yellow;
+    }
+</style>
+<body>
+<div class="wrap">
+    <div class="light greenLight"></div>
+    <div class="light yellowLight"></div>
+    <div class="light redLight"></div>
+</div>
+</body>
+
+<script !src="">
+
+    class Light {
+        /**
+         * @description
+         * @data 2020/8/30
+         * @param {object} config 配置
+         * @param {string} config.className 节点类名
+         * @param {string} config.closeColor 关闭颜色
+         * @param {string} config.openColor 开启颜色
+         * @param {number} config.delay 开启持续时间
+         */
+        constructor(config) {
+            Object.assign(this, config)
+            this.el = document.querySelector(`.${this.className}`);
+        }
+
+        close() {
+            this.el.style.background = this.closeColor
+        }
+
+        open() {
+            this.el.style.background = this.openColor
+        }
+
+        run() {
+            this.open()
+            console.group(this.openColor, 'open')
+            console.time()
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    console.timeEnd()
+                    console.log(this.openColor, 'close')
+                    console.groupEnd()
+                    this.close()
+                    resolve(true)
+                }, this.delay * 1000)
+            })
+        }
+    }
+
+    const greenLight = new Light({className: 'greenLight', closeColor: 'darkgray', openColor: 'green', delay: 10});
+    const yellowLight = new Light({className: 'yellowLight', closeColor: 'darkgray', openColor: 'yellow', delay: 2});
+    const redLight = new Light({className: 'redLight', closeColor: 'darkgray', openColor: 'red', delay: 5});
+
+    async function run() {
+        while (true) {
+            await greenLight.run()
+            await yellowLight.run()
+            await redLight.run()
+        }
+    }
+
+    run()
+</script>
+</html>
