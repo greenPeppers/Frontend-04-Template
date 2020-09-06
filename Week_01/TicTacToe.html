@@ -1,213 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+	<meta charset="UTF-8">
+	<title>Title</title>
 </head>
 <style>
-    .row {
-        width: 100px;
-        height: 100px;
-        line-height: 100px;
-        background-color: aqua;
-        border: 1px solid white;
-        display: inline-block;
-        vertical-align: middle;
-        font-size: 50px;
-        text-align: center;
-    }
+	.row {
+		width: 100px;
+		height: 100px;
+		line-height: 100px;
+		background-color: aqua;
+		border: 1px solid white;
+		display: inline-block;
+		vertical-align: middle;
+		font-size: 50px;
+		text-align: center;
+	}
 </style>
 <body>
 <div id="board"/>
 </body>
 <script !src="">
-    let pattern = [
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0]
-    ];
+	let pattern = [
+		[0, 0, 0],
+		[0, 0, 0],
+		[0, 0, 0]
+	];
 
-    let color = 1;
-    let isStop = false;
+	let color = 1;
+	let isStop = false;
 
-    /**
-     * @description 创建棋盘
-     * @data 2020/8/29
-     * @param {*}
-     */
-    function createBoard(pattern) {
-        let board = pattern.reduce((preBoardEl, cellArr) => {
-            let cell = cellArr.reduce((preCellEl, row, rowIndex) => {
-                let rowEl = document.createElement('div');
-                rowEl.classList.add('row')
-                rowEl.addEventListener('click', () => userMove(cellArr, rowIndex))
-                rowEl.innerText = Number(row) === 2 ? '❌' : Number(row) === 1 ? '⭕️' : '';
-                preCellEl.appendChild(rowEl)
-                return preCellEl
-            }, document.createElement('div'))
-            preBoardEl.appendChild(cell)
-            return preBoardEl
-        }, document.createElement('div'))
-        document.body.innerHTML = '';
-        document.body.appendChild(board)
-    }
+	/**
+	 * @description 创建棋盘
+	 * @data 2020/8/29
+	 * @param {*}
+	 */
+	function createBoard(pattern) {
+		let board = pattern.reduce((preBoardEl, cellArr) => {
+			let cell = cellArr.reduce((preCellEl, row, rowIndex) => {
+				let rowEl = document.createElement('div');
+				rowEl.classList.add('row')
+				rowEl.addEventListener('click', () => userMove(cellArr, rowIndex))
+				rowEl.innerText = Number(row) === 2 ? '❌' : Number(row) === 1 ? '⭕️' : '';
+				preCellEl.appendChild(rowEl)
+				return preCellEl
+			}, document.createElement('div'))
+			preBoardEl.appendChild(cell)
+			return preBoardEl
+		}, document.createElement('div'))
+		document.body.innerHTML = '';
+		document.body.appendChild(board)
+	}
 
-    function userMove(target, index) {
+	function userMove(target, index) {
 
-        if (isStop) return alert('game over！');
+		if (isStop) return alert('game over！');
 
-        if (target[index]) return;
+		if (target[index]) return;
 
-        target[index] = color;
-        createBoard(pattern)
+		target[index] = color;
+		createBoard(pattern)
 
-        if (check(pattern, color)) {
-            isStop = true
-            return setTimeout(() => alert(Number(color) === 1 ? '⭕️ is winner' : '❌ is winner'), 0)
-        }
+		if (check(pattern, color)) {
+			isStop = true
+			const c = color;
+			return setTimeout(() => alert(Number(c) === 1 ? '⭕️ is winner' : '❌ is winner'), 0)
+		}
 
-        color = 3 - color;
+		color = 3 - color;
 
-        if (willWin(pattern, color)) console.log(Number(color) === 1 ? '⭕️ will win' : '❌ will win');
+		if (willWin(pattern, color)) console.log(Number(color) === 1 ? '⭕️ will win' : '❌ will win');
 
-        computerMove(pattern, color)
-    }
+		computerMove(pattern, color)
+	}
 
-    /**
-     * @description 电脑
-     * @data 2020/8/30
-     * @param {*}
-     */
-    function computerMove(parent) {
-        let choice = bestChoice(parent, color)
-        if (choice.point) parent[choice.point[0]][choice.point[1]] = color;
-        createBoard(parent)
-        if (check(pattern, color)) {
-            isStop = true
-            setTimeout(() => alert(Number(color) === 1 ? '⭕️ is winner' : '❌ is winner'), 0)
-        }
-        color = 3 - color;
-    }
+	/**
+	 * @description 电脑
+	 * @data 2020/8/30
+	 * @param {*}
+	 */
+	function computerMove(parent) {
+		let choice = bestChoice(parent, color)
+		if (choice.point) parent[choice.point[0]][choice.point[1]] = color;
+		createBoard(parent)
+		if (check(pattern, color)) {
+			isStop = true
+			const c = color;
+			setTimeout(() => alert(Number(c) === 1 ? '⭕️ is winner' : '❌ is winner'), 0)
+		}
+		color = 3 - color;
+	}
 
-    /**
-     * @description 是否存在一方胜利
-     * @data 2020/8/30
-     * @param {*}
-     */
-    function check(pattern, color) {
-        // 存在一行
-        if (pattern.some(arr => arr.every(it => it === color))) return true;
+	/**
+	 * @description 是否存在一方胜利
+	 * @data 2020/8/30
+	 * @param {*}
+	 */
+	function check(pattern, color) {
+		// 存在一行
+		if (pattern.some(arr => arr.every(it => it === color))) return true;
 
-        // 存在一列
-        for (let i = 0; i < pattern.length; i++) {
-            let win = true;
-            for (let j = 0; j < pattern[i].length; j++) {
-                if (pattern[j][i] !== color) win = false;
-            }
-            if (win) return true;
-        }
+		// 存在一列
+		for (let i = 0; i < pattern.length; i++) {
+			let win = true;
+			for (let j = 0; j < pattern[i].length; j++) {
+				if (pattern[j][i] !== color) win = false;
+			}
+			if (win) return true;
+		}
 
-        // 正对角存在xiangdeng
-        {
-            let win = true;
-            for (let i = 0; i < pattern.length; i++) {
-                if (pattern[i][i] !== color) win = false
-            }
-            if (win) return true;
-        }
+		// 正对角存在xiangdeng
+		{
+			let win = true;
+			for (let i = 0; i < pattern.length; i++) {
+				if (pattern[i][i] !== color) win = false
+			}
+			if (win) return true;
+		}
 
-        // 反对角存在相等
-        {
-            let win = true;
-            for (let i = 0; i < pattern.length; i++) {
-                if (pattern[i][pattern[i].length - i - 1] !== color) win = false
-            }
-            if (win) return true;
-        }
+		// 反对角存在相等
+		{
+			let win = true;
+			for (let i = 0; i < pattern.length; i++) {
+				if (pattern[i][pattern[i].length - i - 1] !== color) win = false
+			}
+			if (win) return true;
+		}
 
-    }
+	}
 
-    /**
-     * @description 深拷贝
-     * @data 2020/8/30
-     * @param {*}
-     */
-    function deepCopy(target) {
+	/**
+	 * @description 深拷贝
+	 * @data 2020/8/30
+	 * @param {*}
+	 */
+	function deepCopy(target) {
 
-        // 不排除null 和 undefined
-        if (target === null) return null;
+		// 不排除null 和 undefined
+		if (target === null) return null;
 
-        if (target === void 0) return void 0;
+		if (target === void 0) return void 0;
 
-        let resultObj = Array.isArray(target) ? [] : {};
+		let resultObj = Array.isArray(target) ? [] : {};
 
-        for (let key in target) {
+		for (let key in target) {
 
-            if (typeof target[key] === 'object') resultObj[key] = deepCopy(target[key]);
+			if (typeof target[key] === 'object') resultObj[key] = deepCopy(target[key]);
 
-            else resultObj[key] = target[key];
+			else resultObj[key] = target[key];
 
-        }
-        return resultObj
-    }
+		}
+		return resultObj
+	}
 
-    /**
-     * @description 是否存在一方要赢
-     * @data 2020/8/30
-     * @param {*}
-     */
-    function willWin(pattern, color) {
-        for (let i = 0; i < pattern.length; i++) {
-            for (let j = 0; j < pattern[i].length; j++) {
-                if (pattern[i][j]) continue;
-                let clonePattern = deepCopy(pattern);
-                clonePattern[i][j] = color;
-                if (check(clonePattern, color)) return [i, j];
-            }
-        }
-        return null;
-    }
+	/**
+	 * @description 是否存在一方要赢
+	 * @data 2020/8/30
+	 * @param {*}
+	 */
+	function willWin(pattern, color) {
+		for (let i = 0; i < pattern.length; i++) {
+			for (let j = 0; j < pattern[i].length; j++) {
+				if (pattern[i][j]) continue;
+				let clonePattern = deepCopy(pattern);
+				clonePattern[i][j] = color;
+				if (check(clonePattern, color)) return [i, j];
+			}
+		}
+		return null;
+	}
 
-    /**
-     * @description 找出最好的决策
-     * @data 2020/8/30
-     * @param {*}
-     */
-    function bestChoice(pattern, color) {
-        // debugger
-        let p;
-        // 如果存在将要赢的情况直接返回
-        if (p = willWin(pattern, color)) {
-            return {
-                point: p,
-                result: 1
-            }
-        }
+	/**
+	 * @description 找出最好的决策
+	 * @data 2020/8/30
+	 * @param {*}
+	 */
+	function bestChoice(pattern, color) {
+		// debugger
+		let p;
+		// 如果存在将要赢的情况直接返回
+		if (p = willWin(pattern, color)) {
+			return {
+				point: p,
+				result: 1
+			}
+		}
 
-        let result = -2, point = null;
+		let result = -2, point = null;
 
-        out: for (let i = 0; i < pattern.length; i++) {
-            for (let j = 0; j < pattern[i].length; j++) {
-                if (pattern[i][j]) continue;
-                let clonePattern = deepCopy(pattern);
-                clonePattern[i][j] = color;
-                let res = bestChoice(clonePattern, 3 - color).result
+		out: for (let i = 0; i < pattern.length; i++) {
+			for (let j = 0; j < pattern[i].length; j++) {
+				if (pattern[i][j]) continue;
+				let clonePattern = deepCopy(pattern);
+				clonePattern[i][j] = color;
+				let res = bestChoice(clonePattern, 3 - color).result
 
-                if (-res > result) {
-                    result = -res;
-                    point = [i, j]
-                }
-                if (result === 1) break out;
-            }
-        }
+				if (-res > result) {
+					result = -res;
+					point = [i, j]
+				}
+				if (result === 1) break out;
+			}
+		}
 
-        return {
-            result: point ? result : 0,
-            point
-        }
-    }
+		return {
+			result: point ? result : 0,
+			point
+		}
+	}
 
-    // 绘制
-    createBoard(pattern)
+	// 绘制
+	createBoard(pattern)
 </script>
 </html>

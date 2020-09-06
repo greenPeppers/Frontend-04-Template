@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+	<meta charset="UTF-8">
+	<title>地图</title>
+</head>
+<style>
+	#map {
+		width: 700px;
+		height: 700px;
+		border: 1px solid gray;
+	}
+</style>
+<body>
+<div id="map"></div>
+<button onclick="localStorage.mapData = JSON.stringify(map.mapData)">save</button>
+<button onclick="localStorage.clear()">clearStorage</button>
+</body>
+<script !src="">
+	let isMousedown = false;
+	let isClear = false;
+	const INSERT = Symbol('insert')
+
+	class Sorted {
+		constructor(data, compare = (a, b) => a - b) {
+			this.data = data.slice()
+			this.compare = compare
+		}
+
+		take() {
+			if (!this.data) return;
+			let min = this.data[0];
+			let minIndex = 0;
+			for (let i = 1; i < this.data.length; i++) {
+				if (this.compare(this.data[i], min) < 0) {
+					min = this.data[i];
+					minIndex = i
+				}
+			}
+			this.data[minIndex] = this.data[this.data.length - 1];
+			this.data.pop();
+			return min
+		}
+
+		give(v) {
+			this.data.push(v)
+		}
+	}
+
+	class Map {
+
+		/**
+		 * @description
+		 * @data 2020/9/6
+		 * @param {HTMLElement} el element
+		 * @param {Array} mapData 地图render数据
+		 * @param {Object} spotConf 地图单点配置
+		 * @param {Number} spotConf.width 地图单点宽度
+		 * @param {Number} spotConf.height 地图单点高度
+		 */
+		constructor(el, mapData, spotConf = {width: 6, height: 6}) {
+			// dom节点校验
+			if (!(el instanceof HTMLElement)) throw Error('arguments[0] must be a HTMLElement');
+			this.el = el;
+
+			// 校验点配置，保存
+			let checlSpotConf = this.checkSoportConf(spotConf)
+			if (checlSpotConf) throw Error(checlSpotConf);
+			this.spotConf = spotConf
+
+			//
+			if (mapData) this.mapData = mapData;
+			else {
+				let rowsSum = this.columns * this.rows
+				this.mapData = Array(rowsSum).fill(0)
+			}
+			// 初始化
+			this.init()
+		}
+
+		/**
+		 * @description 初始化地图
+		 * @data 2020/9/6
+		 * @param {*}
+		 */
+		init() {
+			// 将容器改为grid布局
+			this._setElGrid()
+			// 生成spot
+			this._createSpot()
+
+		}
+
+		/**
+		 * @description 地图列数
+		 * @data 2020/9/6
+		 * @param {*}
+		 */
+		get columns() {
+			return Math.floor(this.el.clientWidth / (this.spotConf.width + 1))
+		}
+
+		/**
+		 * @description 地图行数
+		 * @data 2020/9/6
+		 * @param {*}
+		 */
+		get rows() {
+			return Math.floor(this.el.clientHeight / (this.spotConf.height + 1))
+		}
+
+		/**
+		 * @description 校验spot配置
+		 * @data 2020/9/6
+		 * @param {*}
+		 */
+		checkSoportConf(conf) {
+			if (typeof conf.width !== 'number') return 'arguments[1].with must be a Number';
+			if (typeof conf.height !== 'number') return 'arguments[1].height must be a Number';
+			return false
+		}
+
+		/**
+		 * @description 容器布局改为grid
+		 * @data 2020/9/6
+		 * @param {*}
+		 */
+		_setElGrid() {
+			this.el.style.display = 'grid';
+			this.el.style.gridTemplateColumns = `repeat(auto-fill, ${this.spotConf.width}px)`;
+			this.el.style.gridTemplateRows = `repeat(auto-fill, ${this.spotConf.height}px)`;
+			this.el.style.gap = '1px';
+		}
+
+		/**
+		 * @description 创建地图点
+		 * @data 2020/9/6
+		 * @param {*}
+		 */
+		_createSpot() {
+			// 生成虚拟节点
+			const fragment = this.mapData.reduce((preFragment, value, index) => {
+				// 创建单点
+				let spotEl = document.createElement('div')
+				// 单点状态颜色区分
+				if (value === 1) spotEl.style.background = 'black';
+				else if (value === 2) spotEl.style.background = 'orange';
+				else spotEl.style.background = 'darkgray';
+				// 点击返回坐标
+				spotEl.addEventListener('click', e => {
+					console.log(`x: ${index % this.columns} y:${Math.floor(index / this.columns)}`)
+				})
+				// 监听鼠标事件
+				spotEl.addEventListener('mousemove', () => {
+					if (!isMousedown) return;
+					// 鼠标行为区分 标记/清除
+					if (isClear) {
+						spotEl.style.background = 'darkgray';
+						this.mapData[index] = 0
+					} else {
+						spotEl.style.background = 'black';
+						this.mapData[index] = 1
+					}
+				})
+				// 虚拟节点拼接
+				preFragment.appendChild(spotEl)
+				return preFragment
+			}, document.createDocumentFragment())
+			// 注入容器
+			this.el.appendChild(fragment)
+		}
+
+		/**
+		 * @description 演示
+		 * @data 2020/9/6
+		 * @param {*}
+		 */
+		sleep(delay) {
+			return new Promise(resolve => setTimeout(resolve, delay))
+		}
+
+		/**
+		 * @description 计算两点之间距离，返回值应该开根号，但在此处不影响大小判断，所以解决运算
+		 * @data 2020/9/6
+		 * @param {*}
+		 */
+		distance(point, target) {
+			return (point[0] - target[0]) ** 2 + (point[1] - target[1]) ** 2
+		}
+
+		/**
+		 * @description 找寻坐标
+		 * @data 2020/9/6
+		 * @param {Array} start 开始坐标
+		 * @param {number} endX 终点X点
+		 * @param {number} endY 终点Y点
+		 */
+		async findPath(start, [endX, endY]) {
+			let queue = new Sorted([start], (a, b) => this.distance(a, [endX, endY]) - this.distance(b, [endX, endY]))
+			let table = Object.create(this.mapData)
+
+			while (queue.data.length) {
+				// 取出队列一个点
+				let [x, y] = queue.take()
+				// 找到终点则返回
+				if (x === endX && y === endY) {
+					let path = [];
+					while (x != start[0] || y != start[1]) {
+						path.push(this.mapData[y * this.columns + x]);
+						[x, y] = table[y * this.columns + x]
+						await this.sleep(1);
+						this.el.children[y * this.columns + x].style.background = 'red'
+					}
+					return table
+				}
+				;
+				// 存入当前点上下左右点位
+				await this[INSERT]([x - 1, y], [x, y], queue, table)
+				await this[INSERT]([x + 1, y], [x, y], queue, table)
+				await this[INSERT]([x, y - 1], [x, y], queue, table)
+				await this[INSERT]([x, y + 1], [x, y], queue, table)
+				await this[INSERT]([x + 1, y + 1], [x, y], queue, table)
+				await this[INSERT]([x + 1, y - 1], [x, y], queue, table)
+				await this[INSERT]([x - 1, y - 1], [x, y], queue, table)
+				await this[INSERT]([x - 1, y + 1], [x, y], queue, table)
+			}
+			return null;
+		}
+
+		/**
+		 * @description 是否是地图范围内可用点，并拼入队列
+		 * @data 2020/9/6
+		 * @param {Number} x
+		 * @param {Number} y
+		 * @param {Array} queue
+		 */
+		async [INSERT]([x, y], pre, queue, table) {
+			if (x < 0 || y < 0 || x >= this.columns || y >= this.rows) return;
+			if (table[y * this.columns + x]) return;
+			await this.sleep(1);
+			this.el.children[y * this.columns + x].style.background = 'lightgreen'
+			table[y * this.columns + x] = pre;
+			queue.give([x, y])
+		}
+	}
+
+	const wrapEl = document.querySelector('#map')
+	const mapData = localStorage.mapData ? JSON.parse(localStorage.mapData) : Array(10000).fill(0)
+	const map = new Map(wrapEl, mapData)
+
+	wrapEl.addEventListener('mousedown', e => {
+		isMousedown = true
+		isClear = (e.which === 3)
+	})
+
+	wrapEl.addEventListener('mouseup', e => isMousedown = false);
+	wrapEl.addEventListener('contextmenu', e => e.preventDefault());
+
+</script>
+</html>
