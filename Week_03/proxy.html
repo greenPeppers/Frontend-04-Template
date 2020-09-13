@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+<input type="range" name="" id="r" min=0 max=255 />
+<input type="range" name="" id="g" min=0 max=255 />
+<input type="range" name="" id="b" min=0 max=255 />
+<div id="color" style="with: 50px; height: 50px"></div>
+</body>
+<script !src="">
+	let callbacks = new Map(), reactives = new Map(), useReactivtives = [];
+
+	let object = {
+		r: 0,
+		g: 0,
+		b: 0,
+	}
+
+	function reactive(obj) {
+		if (reactives.has(obj)) return reactives.get(obj);
+		let proxy = new Proxy(obj, {
+			set(target, p, value, receiver) {
+				target[p] = value;
+				console.log('target', target)
+				if (callbacks.get(target) && callbacks.get(target).get(p))
+					for (let callback of callbacks.get(target).get(p)) callback();
+
+				return target
+			},
+			get(target, p, receiver) {
+				useReactivtives.push([target, p])
+				if (typeof target[p] === 'object') return reactive(target[p])
+				return target[p]
+			}
+		})
+
+		reactives.set(obj, proxy)
+		return proxy
+	}
+
+	let po = reactive(object)
+
+	effect(() => {
+		document.getElementById('r').value = po.r
+	})
+	effect(() => {
+		document.getElementById('g').value = po.g
+	})
+	effect(() => {
+		document.getElementById('b').value = po.b
+	})
+
+	effect(() => {
+		document.getElementById('color').style.background = `rgb(${po.r} ${po.g} ${po.b})`
+	})
+
+	document.getElementById('r').addEventListener('input', event => po.r = event.target.value)
+	document.getElementById('g').addEventListener('input', event => po.g = event.target.value)
+	document.getElementById('b').addEventListener('input', event => po.b = event.target.value)
+
+	function effect(callback) {
+		useReactivtives = [];
+		callback();
+
+		for (let reactive of useReactivtives) {
+			if (!callbacks.has(reactive[0])) callbacks.set(reactive[0], new Map());
+			if (!callbacks.get(reactive[0]).has(reactive[1])) callbacks.get(reactive[0]).set(reactive[1], []);
+			callbacks.get(reactive[0]).get(reactive[1]).push(callback);
+		}
+
+	}
+</script>
+</html>
