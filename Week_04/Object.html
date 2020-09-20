@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+</body>
+<script !src="">
+	class Person {
+		constructor(name) {
+			this.name = name
+		}
+
+		// 遇险
+		beInDanger(target) {
+			this.run()
+			this.cry()
+		}
+		// 跑
+		run() {
+			console.log('help！')
+		}
+		// 哭
+		cry() {
+			console.log('T ^ T')
+		}
+		// da
+		hit(target) {
+			target.beInDanger instanceof Function && target.beInDanger(this)
+		}
+
+	}
+
+	class Animal {
+		constructor(name) {
+			this.name = name
+		}
+		// 咬
+		bite(target) {
+			target.beInDanger instanceof Function && target.beInDanger()
+		}
+
+	}
+
+	class Dog extends Animal {
+		constructor(name) {
+			super(name);
+		}
+		// 遇险
+		beInDanger(target) {
+			this.bite(target)
+		}
+	}
+
+	class BadPerson extends Person {
+		constructor(name) {
+			super(name);
+		}
+		// 看见动物
+		seeAnimal(target) {
+			this.hit(target)
+		}
+	}
+
+	const dog = new Dog('旺财');
+	const badMan = new BadPerson('万恶')
+
+	badMan.seeAnimal(dog)
+
+	//
+	// string 可以通过setPrototypeof修改原型
+	const str = new String('str')
+	console.log('str', str.prototype) //
+	Object.setPrototypeOf(str, {test: 1})
+	console.log('str', str.prototype) // test: 1
+
+	// number 可以通过setPrototypeof修改原型
+	const num = new String(1)
+	console.log('num', num.prototype) //
+	Object.setPrototypeOf(num, {test: 1})
+	console.log('num', num.prototype) // test: 1
+
+	// array 可以通过setPrototypeof修改原型
+	const arr = new Array(1)
+	console.log('arr', arr.prototype) //
+	Object.setPrototypeOf(arr, {test: 1})
+	console.log('arr', arr.prototype) // test: 1
+
+	//  Set/WeakSet可以通过setPrototypeof修改原型
+	//  Map/WeakMap 可以通过setPrototypeof修改原型
+
+
+
+
+
+</script>
+</html>

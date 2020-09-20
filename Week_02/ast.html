@@ -8,8 +8,8 @@
 
 </body>
 <script !src="">
-	let regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g
-	let dic = ['Number', 'Whitespace', 'LineTerminator', '*', '/', '+', '-']
+	let regexp = /(?<=\()\S+(?<=\))|([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g
+	let dic = ['()', 'Number', 'Whitespace', 'LineTerminator', '*', '/', '+', '-']
 	
 	function* tokenize(source) {
 		let result = null;
@@ -38,9 +38,11 @@
 	}
 	
 	let source = []
-	for (let token of tokenize('1 + 2 * 5 - 3 / 6')) {
+	for (let token of tokenize('5 + ( 1 + 4 ) + 2 * 5  -  3 / 6  - 6')) {
 		if (token.type !== 'Whitespace' && token.type !== 'LineTerminator') source.push(token)
 	}
+
+	console.log('source', source)
 	
 	function Expression(source) {
 		if (source[0].type === 'AdditiveExpression' && source[1] && source[1].type === 'EOF') {
@@ -113,6 +115,6 @@
 		return MultiplicativeExpression(source)
 	}
 
-	console.log(Expression(source))
+	// console.log(Expression(source))
 </script>
 </html>

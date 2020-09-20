@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+</body>
+<script !src="">
+	function UTF8_Encoding (str, isGetBytes) {
+		let codeList = [];
+		for (let i = 0; i < str.length; i++) {
+			let code = str.charCodeAt(i);
+			if (0x00 <= code && code <= 0x7f) {
+				codeList.push(code);
+			} else if (0x80 <= code && code <= 0x7ff) {
+				codeList.push((192 | (31 & (code >> 6))));
+				codeList.push((128 | (63 & code)))
+			} else if ((0x800 <= code && code <= 0xd7ff) || (0xe000 <= code && code <= 0xffff)) {
+				codeList.push((224 | (15 & (code >> 12))));
+				codeList.push((128 | (63 & (code >> 6))));
+				codeList.push((128 | (63 & code)))
+			}
+		}
+		for (let i = 0; i < codeList.length; i++) {
+			codeList[i] = codeList[i].toString(2)
+		}
+		return codeList
+	}
+
+</script>
+</html>
