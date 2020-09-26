@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>realm</title>
+</head>
+<body>
+<div id="container" style="width: 200vw; height: 200vh"></div>
+</body>
+<script src="https://gw.alipayobjects.com/os/lib/antv/g6/3.7.1/dist/g6.min.js"></script>
+<script>
+	let set = new Set([
+		'eval',
+		'isFinite',
+		'isNaN',
+		'parseFloat',
+		'parseInt',
+		'decodeURI',
+		'decodeURIComponent',
+		'encodeURI',
+		'encodeURIComponent',
+		'Array',
+		'Date',
+		'RegExp',
+		'Promise',
+		'Proxy',
+		'Map',
+		'WeakMap',
+		'Set',
+		'WeakSet',
+		'Function',
+		'Boolean',
+		'String',
+		'Number',
+		'Symbol',
+		'Object',
+		'Error',
+		'EvalError',
+		'RangeError',
+		'ReferenceError',
+		'SyntaxError',
+		'TypeError',
+		'URIError',
+		'ArrayBuffer',
+		'SharedArrayBuffer',
+		'DataView',
+		'Float32Array',
+		'Float64Array',
+		'Int8Array',
+		'Int16Array',
+		'Int32Array',
+		'Uint8Array',
+		'Uint16Array',
+		'Uint32Array',
+		'Uint8ClampedArray',
+		'Atomics',
+		'JSON',
+		'Math',
+		'Reflect',
+	])
+	
+	const realm = {
+		name: 'Realm',
+		children: [...set].map(o => ({
+			name: o,
+			children: [],
+		})),
+	}
+	
+	let objects = [...realm.children]
+	
+	while (objects.length > 0) {
+		let realmObj = objects.shift(), name = realmObj.name, children = realmObj.children;
+		for (let obj of Object.getOwnPropertyNames(window[name])) {
+			let objDes = Object.getOwnPropertyDescriptor(window[name], obj)
+			if (
+					(objDes.value !== null && typeof objDes.value === 'object') ||
+					typeof objDes.value === 'function'
+			) {
+				if (!set.has(objDes.value)) {
+					set.add(objDes.value)
+					children.push({
+						name: `${name}.${obj}`,
+						children: [],
+					})
+				}
+				if (objDes.get) {
+					if (!set.has(objDes.get)) {
+						set.add(objDes.get)
+						children.push({
+							name: `${name}.${obj}.get`,
+							children: [],
+						})
+					}
+				}
+				if (objDes.set) {
+					if (!set.has(objDes.set)) {
+						set.add(objDes.set)
+						children.push({
+							name: `${name}.${obj}.set`,
+							children: [],
+						})
+					}
+				}
+			}
+		}
+	}
+</script>
+<script>
+	const width = document.getElementById('container').scrollWidth
+	const height = document.getElementById('container').scrollHeight || 500
+	
+	const graph = new G6.TreeGraph({
+		container: 'container',
+		width,
+		height,
+		modes: {
+			default: [
+				{
+					type: 'collapse-expand',
+					onChange: function onChange(item, collapsed) {
+						const data = item.get('model').data
+						data.collapsed = collapsed
+						return true
+					},
+				},
+				'drag-canvas',
+				'zoom-canvas',
+			],
+		},
+		defaultNode: {
+			size: 26,
+			anchorPoints: [
+				[0, 0.5],
+				[1, 0.5],
+			],
+			style: {
+				fill: '#C6E5FF',
+				stroke: '#5B8FF9',
+			},
+		},
+		defaultEdge: {
+			type: 'cubic-horizontal',
+			style: {
+				stroke: '#A3B1BF',
+			},
+		},
+		layout: {
+			type: 'compactBox',
+			direction: 'LR',
+			getId: function getId(objDes) {
+				return objDes.name
+			},
+			getHeight: function getHeight() {
+				return 16
+			},
+			getWidth: function getWidth() {
+				return 16
+			},
+			getVGap: function getVGap() {
+				return 10
+			},
+			getHGap: function getHGap() {
+				return 100
+			},
+		},
+	})
+	
+	graph.node(function (node) {
+		return {
+			label: node.name,
+			labelCfg: {
+				offset: 10,
+				position: node.children && node.children.length > 0 ? 'left' : 'right',
+			},
+		}
+	})
+	
+	graph.data(realm)
+	graph.render()
+	graph.fitView()
+</script>
+</html>
