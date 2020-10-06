@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+</body>
+<script !src="">
+	function match(str) {
+		let isFindA = false
+		let isFindB = false
+		let isFindC = false
+		let isFindD = false
+		let isFindE = false
+		for(let s of str) {
+			if (s == 'a') isFindA = true;
+			else if (isFindA && s == 'b') isFindB = true
+			else if (isFindB && s == 'c') isFindC = true
+			else if (isFindC && s == 'd') isFindD = true
+			else if (isFindD && s == 'e') isFindE = true
+			else if (isFindE && s == 'f') return true
+			else {
+				isFindA = false
+				isFindB = false
+				isFindC = false
+				isFindD = false
+				isFindE = false
+			}
+		}
+		return false
+	}
+</script>
+</html>

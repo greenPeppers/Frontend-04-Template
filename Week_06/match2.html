@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+
+</body>
+<script !src="">
+	function match(str) {
+		let isFindA = false
+		for(let s of str) {
+			if (s == 'a') isFindA = true;
+			else if (isFindA && s == 'c') return true;
+			else isFindA = false
+		}
+		return false
+	}
+</script>
+</html>
