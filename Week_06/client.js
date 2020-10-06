@@ -201,7 +201,7 @@ void async function () {
 			['X-foo2']: 'costomed'
 		},
 		body: {
-			name: "我是测试数据"
+			name: "测试数据"
 		}
 	})
 	
