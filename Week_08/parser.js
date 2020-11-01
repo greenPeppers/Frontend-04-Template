@@ -7,9 +7,10 @@ let currentToken = null
 let currentAttribute = null
 let currentTextNode = null
 
-let stack = [{ type: 'document', children: [] }]
+let stack = [{type: 'document', children: []}]
 
 let rules = []
+
 function addCSSRules(text) {
 	let ast = css.parse(text)
 	rules.push(...ast.stylesheet.rules)

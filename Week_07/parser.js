@@ -11,13 +11,13 @@ let currentTextNode = null
 
 let rules = []
 
-function addCSSRules (text) {
+function addCSSRules(text) {
 	var ast = css.parse(text)
 	console.log('ast,', ast.stylesheet.rules[0].declarations)
 	rules.push(...ast.stylesheet.rules)
 }
 
-function match (element, selector) {
+function match(element, selector) {
 	if (!selector || !element.attributes) {
 		return false
 	}
@@ -40,7 +40,7 @@ function match (element, selector) {
 	return false
 }
 
-function specificity (selector) {
+function specificity(selector) {
 	let p = [0, 0, 0, 0]
 	let selectorParts = selector.split(' ')
 	for (let part of selectorParts) {
@@ -55,7 +55,7 @@ function specificity (selector) {
 	return p
 }
 
-function compare (sp1, sp2) {
+function compare(sp1, sp2) {
 	if (sp1[0] - sp2[0]) {
 		return sp1[0] - sp2[0]
 	}
@@ -68,7 +68,7 @@ function compare (sp1, sp2) {
 	return sp1[3] - sp2[3]
 }
 
-function computeCSS (element) {
+function computeCSS(element) {
 	var elements = stack.slice().reverse()
 	
 	if (!element.computedStyle) {
@@ -117,7 +117,7 @@ function computeCSS (element) {
 }
 
 
-function emit (token) {
+function emit(token) {
 	
 	let top = stack[stack.length - 1]
 	
@@ -131,7 +131,7 @@ function emit (token) {
 		element.tagName = token.tagName
 		
 		for (let p in token) {
-			if (p !== 'type' && p!== 'tagName') {
+			if (p !== 'type' && p !== 'tagName') {
 				element.attributes.push({
 					name: p,
 					value: token[p]
@@ -174,15 +174,14 @@ function emit (token) {
 }
 
 
-
-function data (c) {
+function data(c) {
 	if (c === '<') {
 		return tagOpen
 	} else if (c === EOF) {
 		emit({
 			type: 'EOF'
 		})
-		return ;
+		return;
 	} else {
 		emit({
 			type: 'text',
@@ -192,7 +191,7 @@ function data (c) {
 	}
 }
 
-function tagOpen (c) {
+function tagOpen(c) {
 	if (c === '/') {
 		return endTagOpen
 	} else if (c.match(/^[a-zA-Z]$/)) {
@@ -202,11 +201,11 @@ function tagOpen (c) {
 		}
 		return tagName(c)
 	} else {
-		return ;
+		return;
 	}
 }
 
-function endTagOpen (c) {
+function endTagOpen(c) {
 	if (c.match(/^[a-zA-Z]$/)) {
 		currentToken = {
 			type: 'endTag',
@@ -222,7 +221,7 @@ function endTagOpen (c) {
 	}
 }
 
-function tagName (c) {
+function tagName(c) {
 	if (c.match(/^[\t\n\f ]$/)) {
 		return beforeAttributeName
 	} else if (c === '/') {
@@ -238,7 +237,7 @@ function tagName (c) {
 	}
 }
 
-function beforeAttributeName (c) {
+function beforeAttributeName(c) {
 	if (c.match(/^[\t\n\f ]$/)) {
 		return beforeAttributeName
 	} else if (c === '>' || c === '/' || c === EOF) {
@@ -255,7 +254,7 @@ function beforeAttributeName (c) {
 	}
 }
 
-function attributeName (c) {
+function attributeName(c) {
 	if (c.match(/^[\t\n\f ]$/) || c === '>' || c === '/' || c === EOF) {
 		return afterAttributeName(c)
 	} else if (c === '=') {
@@ -270,7 +269,7 @@ function attributeName (c) {
 	}
 }
 
-function beforeAttributeValue (c) {
+function beforeAttributeValue(c) {
 	if (c.match(/^[\t\n\f ]$/) || c === '>' || c === '/' || c === EOF) {
 		return beforeAttributeValue
 	} else if (c === '\"') {
@@ -284,7 +283,7 @@ function beforeAttributeValue (c) {
 	}
 }
 
-function doubleQuotedAttributeValue (c) {
+function doubleQuotedAttributeValue(c) {
 	if (c === '\"') {
 		currentToken[currentAttribute.name] = currentAttribute.value
 		return afterQuotedAttributeValue
@@ -298,7 +297,7 @@ function doubleQuotedAttributeValue (c) {
 	}
 }
 
-function singleQuotedAttributeValue (c) {
+function singleQuotedAttributeValue(c) {
 	if (c === '\'') {
 		currentToken[currentAttribute.name] = currentAttribute.value
 		return afterQuotedAttributeValue
@@ -312,7 +311,7 @@ function singleQuotedAttributeValue (c) {
 	}
 }
 
-function afterQuotedAttributeValue (c) {
+function afterQuotedAttributeValue(c) {
 	if (c.match(/^[\t\n\f ]$/)) {
 		return beforeAttributeName
 	} else if (c === '/') {
@@ -329,7 +328,7 @@ function afterQuotedAttributeValue (c) {
 	}
 }
 
-function UnquotedAttributeValue (c) {
+function UnquotedAttributeValue(c) {
 	if (c.match(/^[\t\n\f ]$/)) {
 		currentToken[currentAttribute.name] = currentAttribute.value
 		return beforeAttributeName
@@ -352,7 +351,7 @@ function UnquotedAttributeValue (c) {
 	}
 }
 
-function afterAttributeName (c) {
+function afterAttributeName(c) {
 	if (c.match(/^[\t\n\f ]$/)) {
 		return afterAttributeName
 	} else if (c === '/') {
@@ -376,8 +375,7 @@ function afterAttributeName (c) {
 }
 
 
-
-function selfClosingStartTag (c) {
+function selfClosingStartTag(c) {
 	if (c === '>') {
 		currentToken.isSelfColsing = true
 		emit(currentToken)
@@ -389,7 +387,7 @@ function selfClosingStartTag (c) {
 	}
 }
 
-module.exports.parseHTML = function parseHTML (html) {
+module.exports.parseHTML = function parseHTML(html) {
 	let state = data
 	for (let c of html) {
 		state = state(c)
